@@ -124,7 +124,7 @@ public class StatsScreen extends Screen {
 
 	private int drawString(DrawContext context, String text, int x, int y) {
 		context.drawTextWithShadow(client.textRenderer, text, x, y, 0xFFFFFFFF);
-		return y - client.textRenderer.fontHeight + 2;
+		return y + (client.textRenderer.fontHeight + 2);
 	}
 
 	private static String formatDuration(int totalSeconds) {
