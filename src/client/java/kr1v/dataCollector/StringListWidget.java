@@ -12,8 +12,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class StringListWidget extends ElementListWidget<StringListWidget.StringEntry> {
-	public StringListWidget(MinecraftClient client, int width, int height, int top, int bottom, int itemHeight) {
-		super(client, width, height, top, bottom, itemHeight);
+	public StringListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, int headerHeight) {
+		super(client, width, height, y, itemHeight, headerHeight);
+		this.setX(width);
 	}
 
 	public void addString(String s) {
@@ -23,6 +24,10 @@ public class StringListWidget extends ElementListWidget<StringListWidget.StringE
 	public void setStrings(Collection<String> strings) {
 		this.clearEntries();
 		for (String s : strings) this.addString(s);
+	}
+
+	public void clearStrings() {
+		this.clearEntries();
 	}
 
 	public String getSelectedString() {
@@ -57,7 +62,7 @@ public class StringListWidget extends ElementListWidget<StringListWidget.StringE
 
 		@Override
 		public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickProgress) {
-			context.drawText(MinecraftClient.getInstance().textRenderer, this.text, x + 4, y + (entryHeight - 8) / 4, 0xFFFFFFFF, true);
+			context.drawText(MinecraftClient.getInstance().textRenderer, this.text, x + 4, y, 0xFFFFFFFF, true);
 		}
 	}
 }
