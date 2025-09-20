@@ -16,7 +16,6 @@ public class StringListWidget extends ElementListWidget<StringListWidget.StringE
 		super(client, width, height, top, bottom, itemHeight);
 	}
 
-	/** Add one string to the list */
 	public void addString(String s) {
 		this.addEntry(new StringEntry(s));
 	}

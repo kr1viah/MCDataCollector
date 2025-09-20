@@ -52,7 +52,6 @@ public class StatsScreen extends Screen {
 				totalItems += game.items.size();
 			}
 
-// put this where you render the HUD (you already have the totals calculated above)
 			String totalWinsText = "Wins: " + totalWins;
 			String totalGamesText = "Games: " + totalGames;
 			String totalKillsText = "Kills: " + totalKills;
@@ -60,7 +59,6 @@ public class StatsScreen extends Screen {
 
 			String totalTimeText = "Play time: " + formatDuration(totalTimeInSeconds);
 
-// some optional useful derived stats
 			double winRate = totalGames == 0 ? 0.0 : (100.0 * totalWins) / totalGames;
 			String winRateText = String.format("Win rate: %.1f%%", winRate);
 
@@ -72,10 +70,8 @@ public class StatsScreen extends Screen {
 
 			int x = 5;
 			int y = 5;
-// prefer using the font height for spacing; add a couple pixels so lines don't touch
 			int lineHeight = client.textRenderer.fontHeight + 2;
 
-// draw the core totals
 			context.drawTextWithShadow(client.textRenderer, totalWinsText, x, y, 0xFFFFFFFF);
 			y += lineHeight;
 			context.drawTextWithShadow(client.textRenderer, totalGamesText, x, y, 0xFFFFFFFF);
@@ -87,7 +83,6 @@ public class StatsScreen extends Screen {
 			context.drawTextWithShadow(client.textRenderer, totalItemsText, x, y, 0xFFFFFFFF);
 			y += lineHeight;
 
-// draw the optional derived stats
 			context.drawTextWithShadow(client.textRenderer, winRateText, x, y, 0xFFAAAAFF);
 			y += lineHeight;
 			context.drawTextWithShadow(client.textRenderer, avgKillsText, x, y, 0xFFFFFFFF);
@@ -98,7 +93,6 @@ public class StatsScreen extends Screen {
 		super.render(context, mouseX, mouseY, deltaTicks);
 	}
 
-	// helper to format durations nicely
 	private static String formatDuration(int totalSeconds) {
 		int hours = totalSeconds / 3600;
 		int minutes = (totalSeconds % 3600) / 60;

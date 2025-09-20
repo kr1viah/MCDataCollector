@@ -4,6 +4,7 @@ import kr1v.dataCollector.DataCollectorClient;
 import kr1v.dataCollector.Game;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
@@ -30,8 +31,11 @@ public class ClientPlayNetworkHandlerMixin {
 		final boolean bl2 = previousPacket.getStack().getItem() == packet.getStack().getItem();
 		final boolean bl3 = previousPacket.getSyncId() == packet.getSyncId();
 		final boolean bl4 = previousPacket.getSlot() == packet.getSlot();
+		final boolean bl5 = (packet.getStack().get(DataComponentTypes.DAMAGE) == null) || packet.getStack().get(DataComponentTypes.DAMAGE) == 0;
 
-		if (bl1 && bl2 && bl3 && bl4) {
+		if (bl1 && bl2 && bl3 && bl4)
+			System.out.println(packet.getStack().get(DataComponentTypes.DAMAGE));
+		if (bl1 && bl2 && bl3 && bl4 && bl5) {
 			if (DataCollectorClient.shouldStartNewGame) {
 				DataCollectorClient.data.PoFListOfGames.add(new Game());
 				DataCollectorClient.shouldStartNewGame = false;
