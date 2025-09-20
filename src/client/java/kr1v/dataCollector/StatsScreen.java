@@ -26,7 +26,6 @@ public class StatsScreen extends Screen {
 	@Override
 	public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
 		if (client != null) {
-			int totalWins = 0;
 			int totalGames = 0;
 			int totalKills = 0;
 			int totalTimeInSeconds = 0;
@@ -34,71 +33,84 @@ public class StatsScreen extends Screen {
 			int fastestWinInSeconds = Integer.MAX_VALUE;
 			int maxWinStreak = 0;
 			int currentWinStreak = 0;
+			int mostKillsInOneGame = 0;
+			int totalTimeForWins = 0;
+			int totalItemsForWins = 0;
+
+			int[] placements = new int[9];
 
 			Map<String, Integer> map = new HashMap<>(); // item to count
 			var listOfGames = DataCollectorClient.data.PoFListOfGames;
 
 			for (var game : listOfGames) {
 				if (game.place == null) continue;
+				placements[game.place]++;
 
 				totalGames++;
-				if (game.place == 1) totalWins++;
+				if (game.place == 1) {
+					currentWinStreak++;
+
+					if (fastestWinInSeconds > game.lengthSeconds)
+						fastestWinInSeconds = game.lengthSeconds;
+
+					totalTimeForWins += game.lengthSeconds;
+					totalItemsForWins += game.items.size();
+				} else {
+					currentWinStreak = 0;
+				}
 
 				totalKills += game.kills;
 				totalTimeInSeconds += game.lengthSeconds;
 				totalItems += game.items.size();
 
-				if (fastestWinInSeconds >= game.lengthSeconds && game.place == 1)
-					fastestWinInSeconds = game.lengthSeconds;
+
+				if (mostKillsInOneGame < game.kills)
+					mostKillsInOneGame = game.kills;
+
 				for (String item : game.items) {
 					map.put(item, map.getOrDefault(item, 0) + 1);
 				}
 
-				if (game.place == 1)
-					currentWinStreak++;
-				else
-					currentWinStreak = 0;
 				if (maxWinStreak <= currentWinStreak)
 					maxWinStreak = currentWinStreak;
 			}
 
-			double winRate = totalGames == 0 ? 0.0 : (100.0 * totalWins) / totalGames;
+			double winRate = totalGames == 0 ? 0.0 : (100.0 * placements[1]) / totalGames;
 			double avgKills = totalGames == 0 ? 0.0 : ((double) totalKills) / totalGames;
 			double avgItems = totalGames == 0 ? 0.0 : ((double) totalItems) / totalGames;
 			double avgTimePerGame = totalGames == 0 ? 0.0 : ((double) totalTimeInSeconds) / totalGames;
-
-			int totalTimeForWins = 0;
-			int winsConsidered = 0;
-			int totalItemsForWins = 0;
-			for (var game : listOfGames) {
-				if (game.place != null && game.place == 1) {
-					winsConsidered++;
-					totalTimeForWins += game.lengthSeconds;
-					totalItemsForWins += game.items.size();
-				}
-			}
-			double avgTimePerWin = winsConsidered == 0 ? 0.0 : ((double) totalTimeForWins) / winsConsidered;
-			double avgItemsPerWin = winsConsidered == 0 ? 0.0 : ((double) totalItemsForWins) / winsConsidered;
+			double avgTimePerWin = placements[1] == 0 ? 0.0 : ((double) totalTimeForWins) / placements[1];
+			double avgItemsPerWin = placements[1] == 0 ? 0.0 : ((double) totalItemsForWins) / placements[1];
 			int uniqueItems = map.size();
 
 			int x = 5;
 			int y = 5;
 
 			y = drawString(context, "Play time: " + formatDuration(totalTimeInSeconds), x, y);
-			y = drawString(context, "Wins: " + totalWins, x, y);
+			y = drawString(context, "Wins: " + placements[1], x, y);
+			y = drawString(context, fastestWinInSeconds == Integer.MAX_VALUE ? "Fastest win: -" : "Fastest win: " + formatDuration(fastestWinInSeconds), x, y);
 			y = drawString(context, "Games: " + totalGames, x, y);
 			y = drawString(context, String.format("Win rate: %.1f%%", winRate), x, y);
 			y = drawString(context, "Kills: " + totalKills, x, y);
 			y = drawString(context, "Items: " + totalItems, x, y);
 			y = drawString(context, "Unique items: " + uniqueItems, x, y);
-			y = drawString(context, fastestWinInSeconds == Integer.MAX_VALUE ? "Fastest win: -" : "Fastest win: " + formatDuration(fastestWinInSeconds), x, y);
 			y = drawString(context, String.format("Average kills/game: %.2f", avgKills), x, y);
 			y = drawString(context, String.format("Average items/game: %.2f", avgItems), x, y);
 			y = drawString(context, String.format("Average time/game: %s (%.2fs)", formatDuration((int)Math.round(avgTimePerGame)), avgTimePerGame), x, y);
-			y = drawString(context, winsConsidered == 0 ? "Average time/win: -" : String.format("Average time/win: %s (%.2fs)", formatDuration((int)Math.round(avgTimePerWin)), avgTimePerWin), x, y);
-			y = drawString(context, winsConsidered == 0 ? "Average items/win: -" : String.format("Average items/win: %.2f", avgItemsPerWin), x, y);
+			y = drawString(context, placements[1] == 0 ? "Average time/win: -" : String.format("Average time/win: %s (%.2fs)", formatDuration((int)Math.round(avgTimePerWin)), avgTimePerWin), x, y);
+			y = drawString(context, placements[1] == 0 ? "Average items/win: -" : String.format("Average items/win: %.2f", avgItemsPerWin), x, y);
 			y = drawString(context, "Best win streak: " + maxWinStreak, x, y);
 			y = drawString(context, "Current streak: " + currentWinStreak, x, y);
+			y = drawString(context, "Most kills in one game: " + mostKillsInOneGame, x, y);
+			y = drawString(context, "Placements: ", x, y);
+			for (int i = 0; i < placements.length; i++) {
+				if (i == 0) continue;
+				String toAdd = "th";
+				if (i == 1) toAdd = "st";
+				else if (i == 2) toAdd = "nd";
+				else if (i == 3) toAdd = "rd";
+				y = drawString(context, "    " + i + toAdd + " - " + placements[i] + " times", x, y);
+			}
 
 			List<String> sortedKeys = map.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder()).thenComparing(Map.Entry.comparingByKey()) // optional tie-breaker by key
 			).map(Map.Entry::getKey).toList();
