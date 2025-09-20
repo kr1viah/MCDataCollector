@@ -156,9 +156,9 @@ public class StatsScreen extends Screen {
 			y += lineHeight;
 			context.drawTextWithShadow(client.textRenderer, medianTimeText, x, y, 0xFFFFFFFF);
 			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, fastestWinText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
 			context.drawTextWithShadow(client.textRenderer, longestGameText, x, y, 0xFFFFFFFF);
+			y += lineHeight;
+			context.drawTextWithShadow(client.textRenderer, fastestWinText, x, y, 0xFFFFFFFF);
 
 			List<String> sortedKeys = map.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder()).thenComparing(Map.Entry.comparingByKey()) // optional tie-breaker by key
 			).map(Map.Entry::getKey).toList();
