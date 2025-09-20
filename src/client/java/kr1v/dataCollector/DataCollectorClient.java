@@ -2,7 +2,11 @@ package kr1v.dataCollector;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.MinecraftClient;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -39,6 +43,12 @@ public class DataCollectorClient implements ClientModInitializer {
 				e.printStackTrace();
 			}
 		}));
+
+		ClientCommandRegistrationCallback.EVENT.register((commandDispatcher, commandRegistryAccess) ->
+			commandDispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("show-stats").executes(context -> {
+				MinecraftClient.getInstance().send(() -> MinecraftClient.getInstance().setScreen(new StatsScreen()));
+				return 0;
+			})));
 	}
 
 	public static class Data {
