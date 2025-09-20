@@ -114,11 +114,8 @@ public class StatsScreen extends Screen {
 			}
 
 			if (!filterText.trim().isEmpty()) {
-				if (i == 0)
-					context.drawTextWithShadow(client.textRenderer, "Results: " + i, this.width / 2, 26, 0xFFFF5555);
-				else
-					context.drawTextWithShadow(client.textRenderer, "Results: " + i, this.width / 2, 26, 0xFFFFFFFF);
-
+				int color = i == 0 ? 0xFFFF5555 : 0xFFFFFFFF;
+				context.drawTextWithShadow(client.textRenderer, "Results: " + i, this.width / 2, 26, color);
 			}
 		}
 
