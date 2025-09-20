@@ -48,7 +48,7 @@ public class StatsScreen extends Screen {
 				totalTimeInSeconds += game.lengthSeconds;
 				totalItems += game.items.size();
 
-				if (fastestWinInSeconds >= game.lengthSeconds)
+				if (fastestWinInSeconds >= game.lengthSeconds && game.place == 1)
 					fastestWinInSeconds = game.lengthSeconds;
 				for (String item : game.items) {
 					map.put(item, map.getOrDefault(item, 0) + 1);
