@@ -19,20 +19,8 @@ public class StatsScreen extends Screen {
 	@Override
 	protected void init() {
 		this.stringListWidget = this.addDrawableChild(new StringListWidget(MinecraftClient.getInstance(), this.width / 2, this.height - 50, 50, 10, 0));
+		assert this.client != null;
 		this.filterWidget = this.addDrawableChild(new TextFieldWidget(this.client.textRenderer, this.width / 2, 5, this.width / 2, 20, Text.of("")));
-		Map<String, Integer> map = new HashMap<>(); // item to count
-		var listOfGames = DataCollectorClient.data.PoFListOfGames;
-		for (Game game : listOfGames) {
-			for (String item : game.items) {
-				map.put(item, map.getOrDefault(item, 0) + 1);
-			}
-		}
-		List<String> sortedKeys = map.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder()).thenComparing(Map.Entry.comparingByKey()) // optional tie-breaker by key
-		).map(Map.Entry::getKey).toList();
-		stringListWidget.clearStrings();
-		for (String s : sortedKeys) {
-			stringListWidget.addString(s.replace("_", " ") + ": " + map.get(s));
-		}
 	}
 
 	@Override
@@ -44,41 +32,41 @@ public class StatsScreen extends Screen {
 			int totalTimeInSeconds = 0;
 			int totalItems = 0;
 			int fastestWinInSeconds = Integer.MAX_VALUE;
-			int longestGameInSeconds = 0;
+			int maxWinStreak = 0;
+			int currentWinStreak = 0;
 
 			Map<String, Integer> map = new HashMap<>(); // item to count
 			var listOfGames = DataCollectorClient.data.PoFListOfGames;
 
-			// collect item counts and build list of game lengths
-			List<Integer> gameLengths = new ArrayList<>();
-			for (Game game : listOfGames) {
-				for (String item : game.items) {
-					map.put(item, map.getOrDefault(item, 0) + 1);
-				}
-				// store length for median and longest game calculations (only when length known)
-				if (game.lengthSeconds > 0) {
-					gameLengths.add(game.lengthSeconds);
-					if (game.lengthSeconds > longestGameInSeconds) longestGameInSeconds = game.lengthSeconds;
-				}
-			}
-
 			for (var game : listOfGames) {
 				if (game.place == null) continue;
+
 				totalGames++;
 				if (game.place == 1) totalWins++;
+
 				totalKills += game.kills;
 				totalTimeInSeconds += game.lengthSeconds;
 				totalItems += game.items.size();
-				if (game.lengthSeconds < fastestWinInSeconds) fastestWinInSeconds = game.lengthSeconds;
+
+				if (fastestWinInSeconds >= game.lengthSeconds)
+					fastestWinInSeconds = game.lengthSeconds;
+				for (String item : game.items) {
+					map.put(item, map.getOrDefault(item, 0) + 1);
+				}
+
+				if (game.place == 1)
+					currentWinStreak++;
+				else
+					currentWinStreak = 0;
+				if (maxWinStreak <= currentWinStreak)
+					maxWinStreak = currentWinStreak;
 			}
 
-			// extra computed stats
 			double winRate = totalGames == 0 ? 0.0 : (100.0 * totalWins) / totalGames;
 			double avgKills = totalGames == 0 ? 0.0 : ((double) totalKills) / totalGames;
 			double avgItems = totalGames == 0 ? 0.0 : ((double) totalItems) / totalGames;
 			double avgTimePerGame = totalGames == 0 ? 0.0 : ((double) totalTimeInSeconds) / totalGames;
 
-			// average time for wins (only consider games that were wins)
 			int totalTimeForWins = 0;
 			int winsConsidered = 0;
 			int totalItemsForWins = 0;
@@ -91,74 +79,26 @@ public class StatsScreen extends Screen {
 			}
 			double avgTimePerWin = winsConsidered == 0 ? 0.0 : ((double) totalTimeForWins) / winsConsidered;
 			double avgItemsPerWin = winsConsidered == 0 ? 0.0 : ((double) totalItemsForWins) / winsConsidered;
-
-			// median game length
-			String medianTimeText = "Median game: -";
-			if (!gameLengths.isEmpty()) {
-				Collections.sort(gameLengths);
-				int n = gameLengths.size();
-				double median;
-				if (n % 2 == 1) {
-					median = gameLengths.get(n / 2);
-				} else {
-					median = (gameLengths.get(n/2 - 1) + gameLengths.get(n/2)) / 2.0;
-				}
-				medianTimeText = "Median game: " + formatDuration((int)Math.round(median));
-			}
-
-			// unique items count
 			int uniqueItems = map.size();
-
-			// format common stat strings
-			String totalWinsText = "Wins: " + totalWins;
-			String totalGamesText = "Games: " + totalGames;
-			String totalKillsText = "Kills: " + totalKills;
-			String totalItemsText = "Items: " + totalItems;
-			String uniqueItemsText = "Unique items: " + uniqueItems;
-			String totalTimeText = "Play time: " + formatDuration(totalTimeInSeconds);
-			String fastestWinText = fastestWinInSeconds == Integer.MAX_VALUE ? "Fastest win: -" : "Fastest win: " + formatDuration(fastestWinInSeconds);
-			String longestGameText = longestGameInSeconds == 0 ? "Longest game: -" : "Longest game: " + formatDuration(longestGameInSeconds);
-			String winRateText = String.format("Win rate: %.1f%%", winRate);
-			String avgKillsText = String.format("Avg kills/game: %.2f", avgKills);
-			String avgItemsText = String.format("Avg items/game: %.2f", avgItems);
-			String avgTimeText = String.format("Avg time/game: %s (%.2fs)", formatDuration((int)Math.round(avgTimePerGame)), avgTimePerGame);
-			String avgTimePerWinText = winsConsidered == 0 ? "Avg time/win: -" : String.format("Avg time/win: %s (%.2fs)", formatDuration((int)Math.round(avgTimePerWin)), avgTimePerWin);
-			String avgItemsPerWinText = winsConsidered == 0 ? "Avg items/win: -" : String.format("Avg items/win: %.2f", avgItemsPerWin);
 
 			int x = 5;
 			int y = 5;
-			int lineHeight = client.textRenderer.fontHeight + 2;
 
-			context.drawTextWithShadow(client.textRenderer, totalWinsText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, totalGamesText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, totalKillsText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, totalTimeText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, totalItemsText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, uniqueItemsText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-
-			context.drawTextWithShadow(client.textRenderer, winRateText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, avgKillsText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, avgItemsText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, avgTimeText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, avgItemsPerWinText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, avgTimePerWinText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, medianTimeText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, longestGameText, x, y, 0xFFFFFFFF);
-			y += lineHeight;
-			context.drawTextWithShadow(client.textRenderer, fastestWinText, x, y, 0xFFFFFFFF);
+			y = drawString(context, "Play time: " + formatDuration(totalTimeInSeconds), x, y);
+			y = drawString(context, "Wins: " + totalWins, x, y);
+			y = drawString(context, "Games: " + totalGames, x, y);
+			y = drawString(context, String.format("Win rate: %.1f%%", winRate), x, y);
+			y = drawString(context, "Kills: " + totalKills, x, y);
+			y = drawString(context, "Items: " + totalItems, x, y);
+			y = drawString(context, "Unique items: " + uniqueItems, x, y);
+			y = drawString(context, fastestWinInSeconds == Integer.MAX_VALUE ? "Fastest win: -" : "Fastest win: " + formatDuration(fastestWinInSeconds), x, y);
+			y = drawString(context, String.format("Average kills/game: %.2f", avgKills), x, y);
+			y = drawString(context, String.format("Average items/game: %.2f", avgItems), x, y);
+			y = drawString(context, String.format("Average time/game: %s (%.2fs)", formatDuration((int)Math.round(avgTimePerGame)), avgTimePerGame), x, y);
+			y = drawString(context, winsConsidered == 0 ? "Average time/win: -" : String.format("Average time/win: %s (%.2fs)", formatDuration((int)Math.round(avgTimePerWin)), avgTimePerWin), x, y);
+			y = drawString(context, winsConsidered == 0 ? "Average items/win: -" : String.format("Average items/win: %.2f", avgItemsPerWin), x, y);
+			y = drawString(context, "Best win streak: " + maxWinStreak, x, y);
+			y = drawString(context, "Current streak: " + currentWinStreak, x, y);
 
 			List<String> sortedKeys = map.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder()).thenComparing(Map.Entry.comparingByKey()) // optional tie-breaker by key
 			).map(Map.Entry::getKey).toList();
@@ -174,13 +114,20 @@ public class StatsScreen extends Screen {
 			}
 
 			if (!filterText.trim().isEmpty()) {
-				int colour = 0xFFFFFFFF;
-				if (i == 0) colour -= 0xAAAA;
-				context.drawTextWithShadow(client.textRenderer, "Results: " + i, this.width / 2, 26, colour);
+				if (i == 0)
+					context.drawTextWithShadow(client.textRenderer, "Results: " + i, this.width / 2, 26, 0xFFFF5555);
+				else
+					context.drawTextWithShadow(client.textRenderer, "Results: " + i, this.width / 2, 26, 0xFFFFFFFF);
+
 			}
 		}
 
 		super.render(context, mouseX, mouseY, deltaTicks);
+	}
+
+	private int drawString(DrawContext context, String text, int x, int y) {
+		context.drawTextWithShadow(client.textRenderer, text, x, y, 0xFFFFFFFF);
+		return y - client.textRenderer.fontHeight + 2;
 	}
 
 	private static String formatDuration(int totalSeconds) {
