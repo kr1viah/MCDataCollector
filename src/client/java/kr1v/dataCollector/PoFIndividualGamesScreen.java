@@ -172,11 +172,11 @@ public class PoFIndividualGamesScreen extends Screen {
 		try {
 			if (!minPlaceField.getText().isEmpty()) {
 				int minPlace = Integer.parseInt(minPlaceField.getText());
-				filteredGames.removeIf(game -> game.place < minPlace);
+				filteredGames.removeIf(game -> game.place != null && game.place < minPlace);
 			}
 			if (!maxPlaceField.getText().isEmpty()) {
 				int maxPlace = Integer.parseInt(maxPlaceField.getText());
-				filteredGames.removeIf(game -> game.place > maxPlace);
+				filteredGames.removeIf(game -> game.place != null && game.place > maxPlace);
 			}
 		} catch (NumberFormatException ignored) {}
 
