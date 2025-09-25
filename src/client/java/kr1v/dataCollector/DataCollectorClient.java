@@ -46,7 +46,7 @@ public class DataCollectorClient implements ClientModInitializer {
 
 		ClientCommandRegistrationCallback.EVENT.register((commandDispatcher, commandRegistryAccess) ->
 			commandDispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("show-stats").executes(context -> {
-				MinecraftClient.getInstance().send(() -> MinecraftClient.getInstance().setScreen(new StatsScreen()));
+				MinecraftClient.getInstance().send(() -> MinecraftClient.getInstance().setScreen(new PoFStatsScreen()));
 				return 0;
 			})));
 	}
@@ -59,7 +59,6 @@ public class DataCollectorClient implements ClientModInitializer {
 			if (dir == null) dir = Paths.get(".");
 			Files.createDirectories(dir);
 
-			// timestamp format: 20250919_204530 (yyyyMMdd_HHmmss)
 			DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
 			String timestamp = LocalDateTime.now().format(fmt);
 			String filename = "pof-data-" + timestamp + ".json";

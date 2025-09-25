@@ -12,9 +12,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class StringListWidget extends ElementListWidget<StringListWidget.StringEntry> {
-	public StringListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, int headerHeight) {
+	public StringListWidget(MinecraftClient client, int width, int height, int y, int itemHeight, int headerHeight, int x) {
 		super(client, width, height, y, itemHeight, headerHeight);
-		this.setX(width);
+		this.setX(x);
 	}
 
 	public void addString(String s) {

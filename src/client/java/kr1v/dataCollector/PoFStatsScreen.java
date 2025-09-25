@@ -1,26 +1,32 @@
 package kr1v.dataCollector;
 
+import kr1v.dataCollector.util.StringDrawer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
 
 import java.util.*;
 
-public class StatsScreen extends Screen {
+public class PoFStatsScreen extends Screen {
 	private StringListWidget stringListWidget;
 	private TextFieldWidget filterWidget;
+	private ButtonWidget individualGamesScreenButton;
 
-	protected StatsScreen() {
+	protected PoFStatsScreen() {
 		super(Text.of(""));
 	}
 
 	@Override
 	protected void init() {
-		this.stringListWidget = this.addDrawableChild(new StringListWidget(MinecraftClient.getInstance(), this.width / 2, this.height - 50, 50, 10, 0));
+		this.stringListWidget = this.addDrawableChild(new StringListWidget(MinecraftClient.getInstance(), this.width / 2, this.height - 50, 50, 10, 0, this.width / 2));
 		assert this.client != null;
 		this.filterWidget = this.addDrawableChild(new TextFieldWidget(this.client.textRenderer, this.width / 2, 5, this.width / 2, 20, Text.of("")));
+		this.individualGamesScreenButton = this.addDrawableChild(ButtonWidget.builder(Text.literal("Individual stats"), button -> {
+			this.client.setScreen(new PoFIndividualGamesScreen());
+		}).dimensions(5, this.height - 25, 150, 20).build());
 	}
 
 	@Override
@@ -86,30 +92,32 @@ public class StatsScreen extends Screen {
 			int x = 5;
 			int y = 5;
 
-			y = drawString(context, "Play time: " + formatDuration(totalTimeInSeconds), x, y);
-			y = drawString(context, "Wins: " + placements[1], x, y);
-			y = drawString(context, fastestWinInSeconds == Integer.MAX_VALUE ? "Fastest win: -" : "Fastest win: " + formatDuration(fastestWinInSeconds), x, y);
-			y = drawString(context, "Games: " + totalGames, x, y);
-			y = drawString(context, String.format("Win rate: %.1f%%", winRate), x, y);
-			y = drawString(context, "Kills: " + totalKills, x, y);
-			y = drawString(context, "Items: " + totalItems, x, y);
-			y = drawString(context, "Unique items: " + uniqueItems, x, y);
-			y = drawString(context, String.format("Average kills/game: %.2f", avgKills), x, y);
-			y = drawString(context, String.format("Average items/game: %.2f", avgItems), x, y);
-			y = drawString(context, String.format("Average time/game: %s (%.2fs)", formatDuration((int)Math.round(avgTimePerGame)), avgTimePerGame), x, y);
-			y = drawString(context, placements[1] == 0 ? "Average time/win: -" : String.format("Average time/win: %s (%.2fs)", formatDuration((int)Math.round(avgTimePerWin)), avgTimePerWin), x, y);
-			y = drawString(context, placements[1] == 0 ? "Average items/win: -" : String.format("Average items/win: %.2f", avgItemsPerWin), x, y);
-			y = drawString(context, "Best win streak: " + maxWinStreak, x, y);
-			y = drawString(context, "Current streak: " + currentWinStreak, x, y);
-			y = drawString(context, "Most kills in one game: " + mostKillsInOneGame, x, y);
-			y = drawString(context, "Placements: ", x, y);
+			StringDrawer sd = new StringDrawer(x, y, 0xFFFFFFFF, context, true);
+
+			sd.drawTimeString("Play time: ", (double) totalTimeInSeconds);
+			sd.drawString("Wins: " + placements[1]);
+			sd.drawTimeString("Fastest win: ", (double) fastestWinInSeconds);
+			sd.drawString("Games: " + totalGames);
+			sd.drawString(String.format("Win rate: %.1f%%", winRate));
+			sd.drawString("Kills: " + totalKills);
+			sd.drawString("Items: " + totalItems);
+			sd.drawString("Unique items: " + uniqueItems);
+			sd.drawString(String.format("Average kills/game: %.2f", avgKills));
+			sd.drawString(String.format("Average items/game: %.2f", avgItems));
+			sd.drawTimeString("Average time/game: ", avgTimePerGame, " (%.2fs)".formatted(avgTimePerGame));
+			sd.drawTimeString("Average time/win: ", avgTimePerWin, " (%.2fs)".formatted(avgTimePerWin));
+			sd.drawString(String.format("Average items/win: %.2f", avgItemsPerWin));
+			sd.drawString("Best win streak: " + maxWinStreak);
+			sd.drawString("Current streak: " + currentWinStreak);
+			sd.drawString("Most kills in one game: " + mostKillsInOneGame);
+			sd.drawString("Placements: ");
 			for (int i = 0; i < placements.length; i++) {
 				if (i == 0) continue;
 				String toAdd = "th";
 				if (i == 1) toAdd = "st";
 				else if (i == 2) toAdd = "nd";
 				else if (i == 3) toAdd = "rd";
-				y = drawString(context, "    " + i + toAdd + " - " + placements[i] + " times", x, y);
+				sd.drawString("    " + i + toAdd + " - " + placements[i] + " times");
 			}
 
 			List<String> sortedKeys = map.entrySet().stream().sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder()).thenComparing(Map.Entry.comparingByKey()) // optional tie-breaker by key
@@ -132,23 +140,5 @@ public class StatsScreen extends Screen {
 		}
 
 		super.render(context, mouseX, mouseY, deltaTicks);
-	}
-
-	private int drawString(DrawContext context, String text, int x, int y) {
-		context.drawTextWithShadow(client.textRenderer, text, x, y, 0xFFFFFFFF);
-		return y + (client.textRenderer.fontHeight + 2);
-	}
-
-	private static String formatDuration(int totalSeconds) {
-		int hours = totalSeconds / 3600;
-		int minutes = (totalSeconds % 3600) / 60;
-		int seconds = totalSeconds % 60;
-		if (hours > 0) {
-			return String.format("%dh %dm %ds", hours, minutes, seconds);
-		} else if (minutes > 0) {
-			return String.format("%dm %ds", minutes, seconds);
-		} else {
-			return String.format("%ds", seconds);
-		}
 	}
 }
