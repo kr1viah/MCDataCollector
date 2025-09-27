@@ -60,21 +60,27 @@ public class StringDrawer {
 	}
 
 	public void drawString(String text) {
-		context.drawText(textRenderer, text, x, y, colour, shadow);
-		y += client.textRenderer.fontHeight + 2;
+		var split = text.split("\\R");
+		for (String s : split) {
+			context.drawText(textRenderer, s, x, y, colour, shadow);
+			y += client.textRenderer.fontHeight + 2;
+		}
 	}
 
 	public void drawTimeString(String prefix, Double seconds, String suffix) {
 		String text = prefix + formatDuration(seconds) + suffix;
-		context.drawText(textRenderer, text, x, y, colour, shadow);
-		y += client.textRenderer.fontHeight + 2;
+		var split = text.split("\\R");
+		for (String s : split) {
+			context.drawText(textRenderer, s, x, y, colour, shadow);
+			y += client.textRenderer.fontHeight + 2;
+		}
 	}
 
 	public void drawTimeString(String prefix, Double seconds) {
 		drawTimeString(prefix, seconds, "");
 	}
 
-	private static String formatDuration(Double seconds) {
+	public static String formatDuration(Double seconds) {
 		int totalSeconds = (int)Math.round(seconds);
 		int hours = totalSeconds / 3600;
 		int minutes = (totalSeconds % 3600) / 60;

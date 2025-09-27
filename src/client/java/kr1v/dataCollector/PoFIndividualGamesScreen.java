@@ -96,7 +96,7 @@ public class PoFIndividualGamesScreen extends Screen {
 			this.stringListWidget.clearStrings();
 			if (selectedGame != null) {
 				PoFGame poFGame = selectedGame.poFGame;
-				sd.drawString("In this poFGame");
+				sd.drawString("In this game");
 				sd.setX(sd.getX() + 6);
 				sd.drawString("Total items: " + poFGame.items.size());
 				int i = 0;

@@ -18,18 +18,14 @@ public class ChatHudMixin {
 	@Inject(method = "addMessage(Lnet/minecraft/client/gui/hud/ChatHudLine;)V", at = @At("HEAD"))
 	private void injected(ChatHudLine message, CallbackInfo ci) {
 		String content = message.content().getString();
-		System.out.println(currentGame);
 		if (content.contains("Pillars of Fortune is starting in 1 second")) {
 			currentGame = GameMode.CCG_PILLARS_OF_FORTUNE;
 			data.ListOfPoFGames.add(new PoFGame());
-			System.out.println("Now in POF");
 		} else if (content.contains("Lucky Islands is starting in 1 second")) {
 			currentGame = GameMode.CCG_LUCKY_ISLANDS;
 			data.ListOfLuckyIslandsGames.add(new LuckyIslandsGame());
-			System.out.println("Now in Lucky Islands");
 		} else if (content.contains("Welcome to CubeCraft!")) {
 			currentGame = GameMode.CCG_LOBBY;
-			System.out.println("Now in CCG lobby");
 		}
 		else if (currentGame == GameMode.CCG_PILLARS_OF_FORTUNE) {
 			if (content.contains("● You got ") && content.contains(" place.")) {
@@ -44,19 +40,14 @@ public class ChatHudMixin {
 		} else if (currentGame == GameMode.CCG_LUCKY_ISLANDS) {
 			if (content.contains("● You got ") && content.contains(" place.")) {
 				data.ListOfLuckyIslandsGames.getLast().place = getPlace(content);
-				System.out.println(content);
 			} else if (content.contains("● Game length: ")) {
 				data.ListOfLuckyIslandsGames.getLast().lengthSeconds = getLength(content);
-				System.out.println(content);
 			} else if (content.contains("● Kills: ")) {
 				data.ListOfLuckyIslandsGames.getLast().kills = getKills(content);
-				System.out.println(content);
 			} else if (content.contains("● Lucky blocks opened: ")) {
 				data.ListOfLuckyIslandsGames.getLast().luckyBlocksOpened = getLuckyBlocksOpened(content);
-				System.out.println(content);
 			} else if (content.contains("● Points earned: ")) {
 				data.ListOfLuckyIslandsGames.getLast().pointsEarned = getPoints(content);
-				System.out.println(content);
 			}
 		}
 		else if (content.contains("Thank you for playing Pillars of Fortune")) {

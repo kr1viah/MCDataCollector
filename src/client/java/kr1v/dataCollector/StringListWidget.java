@@ -1,5 +1,6 @@
 package kr1v.dataCollector;
 
+import kr1v.dataCollector.util.StringDrawer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
@@ -21,18 +22,8 @@ public class StringListWidget extends ElementListWidget<StringListWidget.StringE
 		this.addEntry(new StringEntry(s));
 	}
 
-	public void setStrings(Collection<String> strings) {
-		this.clearEntries();
-		for (String s : strings) this.addString(s);
-	}
-
 	public void clearStrings() {
 		this.clearEntries();
-	}
-
-	public String getSelectedString() {
-		StringEntry e = this.getSelectedOrNull();
-		return e == null ? null : e.value;
 	}
 
 	public class StringEntry extends ElementListWidget.Entry<StringEntry> {
@@ -62,7 +53,8 @@ public class StringListWidget extends ElementListWidget<StringListWidget.StringE
 
 		@Override
 		public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickProgress) {
-			context.drawText(MinecraftClient.getInstance().textRenderer, this.text, x + 4, y, 0xFFFFFFFF, true);
+			StringDrawer sd = new StringDrawer(x + 4, y, 0xFFFFFFFF, context, true);
+			sd.drawString(this.text.getString());
 		}
 	}
 }

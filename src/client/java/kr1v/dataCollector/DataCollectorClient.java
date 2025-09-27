@@ -50,6 +50,12 @@ public class DataCollectorClient implements ClientModInitializer {
 				MinecraftClient.getInstance().send(() -> MinecraftClient.getInstance().setScreen(new PoFStatsScreen()));
 				return 0;
 			})));
+
+		ClientCommandRegistrationCallback.EVENT.register((commandDispatcher, commandRegistryAccess) ->
+			commandDispatcher.register(LiteralArgumentBuilder.<FabricClientCommandSource>literal("show-stats-ccg").executes(context -> {
+				MinecraftClient.getInstance().send(() -> MinecraftClient.getInstance().setScreen(new CCGScreen()));
+				return 0;
+			})));
 	}
 
 	public static class Data {
