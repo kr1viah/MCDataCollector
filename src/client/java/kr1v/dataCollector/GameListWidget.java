@@ -1,5 +1,6 @@
 package kr1v.dataCollector;
 
+import kr1v.dataCollector.games.PoFGame;
 import kr1v.dataCollector.util.StringDrawer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -15,8 +16,8 @@ public class GameListWidget extends ElementListWidget<GameListWidget.GameEntry> 
 		this.setX(x);
 	}
 
-	public void addGame(Game game) {
-		this.addEntry(new GameEntry(game));
+	public void addGame(PoFGame poFGame) {
+		this.addEntry(new GameEntry(poFGame));
 	}
 
 	public void clearGames() {
@@ -24,10 +25,10 @@ public class GameListWidget extends ElementListWidget<GameListWidget.GameEntry> 
 	}
 
 	public class GameEntry extends ElementListWidget.Entry<GameEntry> {
-		public final Game game;
+		public final PoFGame poFGame;
 
-		public GameEntry(Game game) {
-			this.game = game;
+		public GameEntry(PoFGame poFGame) {
+			this.poFGame = poFGame;
 		}
 
 		@Override
@@ -36,7 +37,7 @@ public class GameListWidget extends ElementListWidget<GameListWidget.GameEntry> 
 
 			Map<String, Integer> map = new HashMap<>();
 
-			for (String item : game.items) {
+			for (String item : poFGame.items) {
 				map.put(item, map.getOrDefault(item, 0) + 1);
 			}
 
@@ -45,9 +46,9 @@ public class GameListWidget extends ElementListWidget<GameListWidget.GameEntry> 
 
 			if (sortedKeys.size() >= 3)
 				sd.drawString("Top item: " + sortedKeys.getFirst() + ": " + map.get(sortedKeys.getFirst()));
-			sd.drawString("Place: " + game.place);
-			sd.drawString("Kills: " + game.kills);
-			sd.drawTimeString("Time: ", (double) game.lengthSeconds);
+			sd.drawString("Place: " + poFGame.place);
+			sd.drawString("Kills: " + poFGame.kills);
+			sd.drawTimeString("Time: ", (double) poFGame.lengthSeconds);
 
 			if (GameListWidget.this.getSelectedOrNull() == this) {
 				context.drawBorder(x-1, y-1, entryWidth+2, entryHeight+2, 0xFF000000);

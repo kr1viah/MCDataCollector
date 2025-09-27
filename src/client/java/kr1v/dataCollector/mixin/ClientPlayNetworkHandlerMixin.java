@@ -1,7 +1,7 @@
 package kr1v.dataCollector.mixin;
 
 import kr1v.dataCollector.DataCollectorClient;
-import kr1v.dataCollector.Game;
+import kr1v.dataCollector.GameMode;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.component.DataComponentTypes;
@@ -21,7 +21,7 @@ public class ClientPlayNetworkHandlerMixin {
 
 	@Inject(method = "onScreenHandlerSlotUpdate", at = @At(value = "INVOKE", shift = At.Shift.AFTER, target = "Lnet/minecraft/network/NetworkThreadUtils;forceMainThread(Lnet/minecraft/network/packet/Packet;Lnet/minecraft/network/listener/PacketListener;Lnet/minecraft/util/thread/ThreadExecutor;)V"))
 	private void injected(ScreenHandlerSlotUpdateS2CPacket packet, CallbackInfo ci) {
-		if (!DataCollectorClient.isInPoF) return;
+		if (DataCollectorClient.currentGame != GameMode.CCG_PILLARS_OF_FORTUNE) return;
 		if (MinecraftClient.getInstance().player == null) return;
 		final int count = packet.getStack().getCount();
 		final PlayerInventory pi = MinecraftClient.getInstance().player.getInventory();
@@ -33,15 +33,9 @@ public class ClientPlayNetworkHandlerMixin {
 		final boolean bl4 = previousPacket.getSlot() == packet.getSlot();
 		final boolean bl5 = (packet.getStack().get(DataComponentTypes.DAMAGE) == null) || packet.getStack().get(DataComponentTypes.DAMAGE) == 0;
 
-		if (bl1 && bl2 && bl3 && bl4)
-			System.out.println(packet.getStack().get(DataComponentTypes.DAMAGE));
 		if (bl1 && bl2 && bl3 && bl4 && bl5) {
-			if (DataCollectorClient.shouldStartNewGame) {
-				DataCollectorClient.data.PoFListOfGames.add(new Game());
-				DataCollectorClient.shouldStartNewGame = false;
-			}
 			String item = packet.getStack().getItem().toString().replace("minecraft:", "");
-			DataCollectorClient.data.PoFListOfGames.getLast().items.add(item);
+			DataCollectorClient.data.ListOfPoFGames.getLast().items.add(item);
 		}
 		previousPacket = packet;
 	}

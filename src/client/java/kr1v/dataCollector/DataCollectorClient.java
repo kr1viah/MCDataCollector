@@ -3,6 +3,8 @@ package kr1v.dataCollector;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import kr1v.dataCollector.games.LuckyIslandsGame;
+import kr1v.dataCollector.games.PoFGame;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -21,8 +23,7 @@ import java.util.Comparator;
 import java.util.List;
 
 public class DataCollectorClient implements ClientModInitializer {
-	public static boolean isInPoF;
-	public static boolean shouldStartNewGame = true;
+	public static GameMode currentGame = null;
 
 	public static Data data = new Data();
 	public static final Path DATA_PATH = Paths.get("config", "data", "pof-data.json");
@@ -52,7 +53,8 @@ public class DataCollectorClient implements ClientModInitializer {
 	}
 
 	public static class Data {
-		public List<Game> PoFListOfGames = new ArrayList<>();
+		public List<PoFGame> ListOfPoFGames = new ArrayList<>();
+		public List<LuckyIslandsGame> ListOfLuckyIslandsGames = new ArrayList<>();
 
 		public synchronized void save(Path path) throws IOException {
 			Path dir = path.getParent();
@@ -61,7 +63,7 @@ public class DataCollectorClient implements ClientModInitializer {
 
 			DateTimeFormatter fmt = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss");
 			String timestamp = LocalDateTime.now().format(fmt);
-			String filename = "pof-data-" + timestamp + ".json";
+			String filename = "data-" + timestamp + ".json";
 			Path target = dir.resolve(filename);
 
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -69,7 +71,7 @@ public class DataCollectorClient implements ClientModInitializer {
 				gson.toJson(this, writer);
 			}
 
-			final String prefix = "pof-data-";
+			final String prefix = "data-";
 			final String suffix = ".json";
 			try (DirectoryStream<Path> ds = Files.newDirectoryStream(dir, entry -> {
 				String n = entry.getFileName().toString();
@@ -78,7 +80,6 @@ public class DataCollectorClient implements ClientModInitializer {
 				List<Path> files = new ArrayList<>();
 				for (Path p : ds) files.add(p);
 
-				// If more than 20, sort by last modified time ascending (oldest first) and delete extras
 				if (files.size() > 20) {
 					List<Path> sorted = files.stream()
 						.sorted(Comparator.comparingLong(p -> {
@@ -86,7 +87,6 @@ public class DataCollectorClient implements ClientModInitializer {
 								FileTime ft = Files.getLastModifiedTime(p);
 								return ft.toMillis();
 							} catch (IOException e) {
-								// If we can't read lastModifiedTime, treat as very new to avoid accidental deletion
 								return Long.MAX_VALUE;
 							}
 						}))
@@ -97,7 +97,6 @@ public class DataCollectorClient implements ClientModInitializer {
 						try {
 							Files.deleteIfExists(sorted.get(i));
 						} catch (IOException ignored) {
-							// If deletion fails, continue with the rest (can't do much here)
 						}
 					}
 				}
@@ -112,8 +111,7 @@ public class DataCollectorClient implements ClientModInitializer {
 				return new Data();
 			}
 
-			// collect files named pof-data-*.json
-			final String prefix = "pof-data-";
+			final String prefix = "data-";
 			final String suffix = ".json";
 			List<Path> candidates = new ArrayList<>();
 			try (DirectoryStream<Path> ds = Files.newDirectoryStream(dir, entry -> {
@@ -124,17 +122,13 @@ public class DataCollectorClient implements ClientModInitializer {
 			}
 
 			if (candidates.isEmpty()) {
-				// no saved snapshots found
 				return new Data();
 			}
 
-			// filenames are like pof-data-YYYYMMDD_HHMMSS.json which sort lexicographically by time;
-			// sort descending so newest is first
 			candidates.sort(Comparator.comparing((Path p) -> p.getFileName().toString()).reversed());
 
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-			// try files from newest to oldest, return first successfully parsed Data
 			for (Path candidate : candidates) {
 				try (Reader reader = Files.newBufferedReader(candidate, StandardCharsets.UTF_8)) {
 					Data d = gson.fromJson(reader, Data.class);
@@ -142,12 +136,10 @@ public class DataCollectorClient implements ClientModInitializer {
 						return d;
 					}
 				} catch (Exception ex) {
-					// print and continue to try older files
 					ex.printStackTrace();
 				}
 			}
 
-			// nothing worked
 			return new Data();
 		}
 	}

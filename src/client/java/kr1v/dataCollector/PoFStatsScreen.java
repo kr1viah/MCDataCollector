@@ -13,7 +13,6 @@ import java.util.*;
 public class PoFStatsScreen extends Screen {
 	private StringListWidget stringListWidget;
 	private TextFieldWidget filterWidget;
-	private ButtonWidget individualGamesScreenButton;
 
 	protected PoFStatsScreen() {
 		super(Text.of(""));
@@ -24,9 +23,7 @@ public class PoFStatsScreen extends Screen {
 		this.stringListWidget = this.addDrawableChild(new StringListWidget(MinecraftClient.getInstance(), this.width / 2, this.height - 50, 50, 10, 0, this.width / 2));
 		assert this.client != null;
 		this.filterWidget = this.addDrawableChild(new TextFieldWidget(this.client.textRenderer, this.width / 2, 5, this.width / 2, 20, Text.of("")));
-		this.individualGamesScreenButton = this.addDrawableChild(ButtonWidget.builder(Text.literal("Individual stats"), button -> {
-			this.client.setScreen(new PoFIndividualGamesScreen());
-		}).dimensions(5, this.height - 25, 150, 20).build());
+		this.addDrawableChild(ButtonWidget.builder(Text.literal("Individual stats"), button -> this.client.setScreen(new PoFIndividualGamesScreen())).dimensions(5, this.height - 25, 150, 20).build());
 	}
 
 	@Override
@@ -46,7 +43,7 @@ public class PoFStatsScreen extends Screen {
 			int[] placements = new int[9];
 
 			Map<String, Integer> map = new HashMap<>(); // item to count
-			var listOfGames = DataCollectorClient.data.PoFListOfGames;
+			var listOfGames = DataCollectorClient.data.ListOfPoFGames;
 
 			for (var game : listOfGames) {
 				if (game.place == null) continue;
@@ -102,14 +99,14 @@ public class PoFStatsScreen extends Screen {
 			sd.drawString("Kills: " + totalKills);
 			sd.drawString("Items: " + totalItems);
 			sd.drawString("Unique items: " + uniqueItems);
-			sd.drawString(String.format("Average kills/game: %.2f", avgKills));
-			sd.drawString(String.format("Average items/game: %.2f", avgItems));
-			sd.drawTimeString("Average time/game: ", avgTimePerGame, " (%.2fs)".formatted(avgTimePerGame));
+			sd.drawString(String.format("Average kills/poFGame: %.2f", avgKills));
+			sd.drawString(String.format("Average items/poFGame: %.2f", avgItems));
+			sd.drawTimeString("Average time/poFGame: ", avgTimePerGame, " (%.2fs)".formatted(avgTimePerGame));
 			sd.drawTimeString("Average time/win: ", avgTimePerWin, " (%.2fs)".formatted(avgTimePerWin));
 			sd.drawString(String.format("Average items/win: %.2f", avgItemsPerWin));
 			sd.drawString("Best win streak: " + maxWinStreak);
 			sd.drawString("Current streak: " + currentWinStreak);
-			sd.drawString("Most kills in one game: " + mostKillsInOneGame);
+			sd.drawString("Most kills in one poFGame: " + mostKillsInOneGame);
 			sd.drawString("Placements: ");
 			for (int i = 0; i < placements.length; i++) {
 				if (i == 0) continue;

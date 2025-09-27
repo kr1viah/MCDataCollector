@@ -1,5 +1,6 @@
 package kr1v.dataCollector;
 
+import kr1v.dataCollector.games.PoFGame;
 import kr1v.dataCollector.util.StringDrawer;
 import kr1v.dataCollector.util.Util;
 import net.minecraft.client.gui.DrawContext;
@@ -16,10 +17,6 @@ public class PoFIndividualGamesScreen extends Screen {
 	StringListWidget stringListWidget;
 	static Sort sortingBy = Sort.RECENT;
 	static TypeOfSort howToSort = TypeOfSort.ASCENDING;
-	private ButtonWidget sortingByButton;
-	private ButtonWidget howToSortButton;
-	private ButtonWidget applyFiltersButton;
-	private ButtonWidget resetFiltersButton;
 	private TextFieldWidget itemFilterField;
 	private TextFieldWidget minKillsField;
 	private TextFieldWidget maxKillsField;
@@ -32,15 +29,15 @@ public class PoFIndividualGamesScreen extends Screen {
 
 	protected void init() {
 		this.gameListWidget = addDrawableChild(new GameListWidget(this.client, this.width / 2, this.height, 0, 50, 0, this.width / 2));
-		for (Game game : DataCollectorClient.data.PoFListOfGames) {
-			gameListWidget.addGame(game);
+		for (PoFGame poFGame : DataCollectorClient.data.ListOfPoFGames) {
+			gameListWidget.addGame(poFGame);
 		}
 		int quarter = width / 4;
 		int oneEights = width / 8;
 
 		this.stringListWidget = addDrawableChild(new StringListWidget(this.client, this.width / 2, this.height / 2, this.height / 2, 11, 0, 0));
 
-		this.sortingByButton = addDrawableChild(new ButtonWidget.Builder(
+		addDrawableChild(new ButtonWidget.Builder(
 			Text.of("Sort by: " + sortingBy.name().toLowerCase().replace("_", " ")),
 			(button) -> {
 				sortingBy = PoFIndividualGamesScreen.next(sortingBy);
@@ -50,15 +47,15 @@ public class PoFIndividualGamesScreen extends Screen {
 			.dimensions(quarter, 22, quarter - 5, 20)
 			.build());
 
-		this.howToSortButton = addDrawableChild(new ButtonWidget.Builder(
-			Text.of(howToSort.name().substring(0,1).concat(howToSort.name().toLowerCase().substring(1))),
+		addDrawableChild(new ButtonWidget.Builder(
+			Text.of(howToSort.name().substring(0, 1).concat(howToSort.name().toLowerCase().substring(1))),
 			(button) -> {
-				if (howToSort == PoFIndividualGamesScreen.TypeOfSort.ASCENDING) {
-					howToSort = PoFIndividualGamesScreen.TypeOfSort.DESCENDING;
+				if (howToSort == TypeOfSort.ASCENDING) {
+					howToSort = TypeOfSort.DESCENDING;
 				} else {
-					howToSort = PoFIndividualGamesScreen.TypeOfSort.ASCENDING;
+					howToSort = TypeOfSort.ASCENDING;
 				}
-				button.setMessage(Text.of(howToSort.name().substring(0,1).concat(howToSort.name().toLowerCase().substring(1))));
+				button.setMessage(Text.of(howToSort.name().substring(0, 1).concat(howToSort.name().toLowerCase().substring(1))));
 				this.applyFilters();
 			})
 			.dimensions(quarter, 44, quarter - 5, 20)
@@ -94,16 +91,16 @@ public class PoFIndividualGamesScreen extends Screen {
 		if (client != null) {
 			StringDrawer sd = new StringDrawer(2, 2, 0xFFFFFFFF, context, true);
 			GameListWidget.GameEntry selectedGame = this.gameListWidget.getSelectedOrNull();
-			sd.drawString("Total games: " + DataCollectorClient.data.PoFListOfGames.size());
+			sd.drawString("Total games: " + DataCollectorClient.data.ListOfPoFGames.size());
 
 			this.stringListWidget.clearStrings();
 			if (selectedGame != null) {
-				Game game = selectedGame.game;
-				sd.drawString("In this game");
+				PoFGame poFGame = selectedGame.poFGame;
+				sd.drawString("In this poFGame");
 				sd.setX(sd.getX() + 6);
-				sd.drawString("Total items: " + game.items.size());
+				sd.drawString("Total items: " + poFGame.items.size());
 				int i = 0;
-				for (String s : game.items) {
+				for (String s : poFGame.items) {
 					String newStr = ++i + ": " + s.replace("_", " ");
 					stringListWidget.addString(newStr);
 				}
@@ -141,19 +138,12 @@ public class PoFIndividualGamesScreen extends Screen {
 		return vals[nextIndex];
 	}
 
-	static Sort prev(Sort s) {
-		Sort[] vals = Sort.values();
-		int nextIndex = (s.ordinal() - 1) % vals.length;
-		if (nextIndex == -1) nextIndex = vals.length-1;
-		return vals[nextIndex];
-	}
-
 	private void applyFilters() {
-		List<Game> filteredGames = new ArrayList<>(DataCollectorClient.data.PoFListOfGames);
+		List<PoFGame> filteredPoFGames = new ArrayList<>(DataCollectorClient.data.ListOfPoFGames);
 
 		String itemFilter = itemFilterField.getText().toLowerCase();
 		if (!itemFilter.isEmpty()) {
-			filteredGames.removeIf(game ->
+			filteredPoFGames.removeIf(game ->
 				game.items.stream().noneMatch(item ->
 					item.toLowerCase().contains(itemFilter)));
 		}
@@ -161,30 +151,30 @@ public class PoFIndividualGamesScreen extends Screen {
 		try {
 			if (!minKillsField.getText().isEmpty()) {
 				int minKills = Integer.parseInt(minKillsField.getText());
-				filteredGames.removeIf(game -> game.kills < minKills);
+				filteredPoFGames.removeIf(game -> game.kills < minKills);
 			}
 			if (!maxKillsField.getText().isEmpty()) {
 				int maxKills = Integer.parseInt(maxKillsField.getText());
-				filteredGames.removeIf(game -> game.kills > maxKills);
+				filteredPoFGames.removeIf(game -> game.kills > maxKills);
 			}
 		} catch (NumberFormatException ignored) {}
 
 		try {
 			if (!minPlaceField.getText().isEmpty()) {
 				int minPlace = Integer.parseInt(minPlaceField.getText());
-				filteredGames.removeIf(game -> game.place != null && game.place < minPlace);
+				filteredPoFGames.removeIf(game -> game.place != null && game.place < minPlace);
 			}
 			if (!maxPlaceField.getText().isEmpty()) {
 				int maxPlace = Integer.parseInt(maxPlaceField.getText());
-				filteredGames.removeIf(game -> game.place != null && game.place > maxPlace);
+				filteredPoFGames.removeIf(game -> game.place != null && game.place > maxPlace);
 			}
 		} catch (NumberFormatException ignored) {}
 
-		Util.sortGames(filteredGames, sortingBy, howToSort);
+		Util.sortGames(filteredPoFGames, sortingBy, howToSort);
 
 		gameListWidget.clearGames();
-		for (Game game : filteredGames) {
-			gameListWidget.addGame(game);
+		for (PoFGame poFGame : filteredPoFGames) {
+			gameListWidget.addGame(poFGame);
 		}
 	}
 }
