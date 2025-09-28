@@ -1,10 +1,7 @@
 package kr1v.dataCollector.mixin;
 
 import kr1v.dataCollector.GameMode;
-import kr1v.dataCollector.games.CCGGame;
-import kr1v.dataCollector.games.LuckyIslandsGame;
-import kr1v.dataCollector.games.PoFGame;
-import kr1v.dataCollector.games.SkyWarsGame;
+import kr1v.dataCollector.games.*;
 import net.minecraft.client.gui.hud.ChatHud;
 import net.minecraft.client.gui.hud.ChatHudLine;
 import org.spongepowered.asm.mixin.Mixin;
@@ -32,22 +29,40 @@ public class ChatHudMixin {
 		} else if (content.contains("SkyWars is starting in 1 second")) {
 			currentGame = GameMode.CCG_SKY_WARS;
 			data.listOfSkyWarsGames.add(new SkyWarsGame());
+		} else if (content.contains("EggWars is starting in 1 second")) {
+			currentGame = GameMode.CCG_EGG_WARS;
+			if (data.listOfEggWarsGames.getLast().lengthSeconds == -1) return;
+			data.listOfEggWarsGames.add(new EggWarsGame());
 		} else if (content.contains("Welcome to CubeCraft!")) {
 			currentGame = GameMode.CCG_LOBBY;
 		} else if (currentGame != null && currentGame.isCCGGame()) {
-			if (!checkBasic(content)) {
+			System.out.println(content);
+			if (!checkBasicCCG(content)) {
 				switch (currentGame) {
 					case CCG_PILLARS_OF_FORTUNE -> {
 					}
+					case CCG_EGG_WARS -> {
+						if (content.contains("● Eggs broken: ")) {
+							data.listOfEggWarsGames.getLast().eggsBroken = getInt(content, "● Eggs broken: ");
+						}
+						if (content.contains("● Deaths: ")) {
+							data.listOfEggWarsGames.getLast().deaths = getInt(content, "● Deaths: ");
+						}
+						if (content.contains("● K/D: ")) {
+							data.listOfEggWarsGames.getLast().KDRatio = getFloat(content, "● K/D: ");
+						}
+						if (content.contains("● Eliminations: ")) {
+							data.listOfEggWarsGames.getLast().finalKills = getInt(content, "● Eliminations: ");
+						}
+					}
 					case CCG_SKY_WARS -> {
 						if (content.contains("● Accuracy: ")) {
-							System.out.println("Accuracy");
-							data.listOfSkyWarsGames.getLast().accuracy = getAccuracy(content);
+							data.listOfSkyWarsGames.getLast().accuracy = getInt(content, "● Accuracy: ", "%");
 						}
 					}
 					case CCG_LUCKY_ISLANDS -> {
 						if (content.contains("● Lucky blocks opened: ")) {
-							data.listOfLuckyIslandsGames.getLast().luckyBlocksOpened = getLuckyBlocksOpened(content);
+							data.listOfLuckyIslandsGames.getLast().luckyBlocksOpened = getInt(content, "● Lucky blocks opened: ");
 						}
 					}
 				}
@@ -56,22 +71,30 @@ public class ChatHudMixin {
 			currentGame = null;
 		} else if (content.contains("Thank you for playing Lucky Islands")) {
 			currentGame = null;
-		}else if (content.contains("Thank you for playing SkyWars")) {
+		} else if (content.contains("Thank you for playing SkyWars")) {
+			currentGame = null;
+		} else if (content.contains("Thank you for playing EggWars")) {
 			currentGame = null;
 		}
 	}
 
 	@Unique
-	private float getAccuracy(String content) {
-		return Float.parseFloat(content.replace("● Accuracy:", "").replace("%", "").trim());
+	private static float getFloat(String content, String prefix) {
+		return getFloat(content, prefix, "");
 	}
 
 	@Unique
-	private boolean checkBasic(String content) {
+	private static float getFloat(String content, String prefix, String suffix) {
+		return Float.parseFloat(content.replace(prefix, "").replace(suffix, ""));
+	}
+
+	@Unique
+	private boolean checkBasicCCG(String content) {
 		List<? extends CCGGame> currentGameList = List.of(new CCGGame());
 		if (currentGame == GameMode.CCG_SKY_WARS) currentGameList = data.listOfSkyWarsGames;
 		if (currentGame == GameMode.CCG_LUCKY_ISLANDS) currentGameList = data.listOfLuckyIslandsGames;
 		if (currentGame == GameMode.CCG_PILLARS_OF_FORTUNE) currentGameList = data.listOfPoFGames;
+		if (currentGame == GameMode.CCG_EGG_WARS) currentGameList = data.listOfEggWarsGames;
 		if (content.contains("● You got ") && content.contains(" place.")) {
 			currentGameList.getLast().place = getPlace(content);
 			return true;
@@ -79,10 +102,10 @@ public class ChatHudMixin {
 			currentGameList.getLast().lengthSeconds = getLength(content);
 			return true;
 		} else if (content.contains("● Kills: ")) {
-			currentGameList.getLast().kills = getKills(content);
+			currentGameList.getLast().kills = getInt(content, "● Kills: ");
 			return true;
 		} else if (content.contains("● Points earned: ")) {
-			currentGameList.getLast().pointsEarned = getPoints(content);
+			currentGameList.getLast().pointsEarned = getInt(content, "● Points earned: ");
 			return true;
 		}
 		return false;
@@ -101,18 +124,13 @@ public class ChatHudMixin {
 	}
 
 	@Unique
-	private static int getKills(String content) {
-		return Integer.parseInt(content.replace("● Kills:", "").trim());
+	private static int getInt(String content, String prefix) {
+		return getInt(content, prefix, "");
 	}
 
 	@Unique
-	private static int getPoints(String content) {
-		return Integer.parseInt(content.replace("● Points earned:", "").trim());
-	}
-
-	@Unique
-	private static int getLuckyBlocksOpened(String content) {
-		return Integer.parseInt(content.replace("● Lucky blocks opened:", "").trim());
+	private static int getInt(String content, String prefix, String suffix) {
+		return Integer.parseInt(content.replace(prefix, "").replace(suffix, ""));
 	}
 
 	@Unique

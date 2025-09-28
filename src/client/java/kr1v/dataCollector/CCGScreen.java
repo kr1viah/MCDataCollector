@@ -40,6 +40,7 @@ public class CCGScreen extends Screen {
 			listOfGames.addAll(DataCollectorClient.data.listOfPoFGames);
 			listOfGames.addAll(DataCollectorClient.data.listOfLuckyIslandsGames);
 			listOfGames.addAll(DataCollectorClient.data.listOfSkyWarsGames);
+			listOfGames.addAll(DataCollectorClient.data.listOfEggWarsGames);
 			listOfGames.sort(Comparator.comparing(
 				g -> g.timeStampGameStart,
 				Comparator.nullsLast(Comparator.reverseOrder())
@@ -47,7 +48,7 @@ public class CCGScreen extends Screen {
 
 
 			for (var game : listOfGames) {
-				if (game.place == null) continue;
+				if (game.place == null || game.place == -1) continue;
 				placements[game.place]++;
 
 				totalGames++;

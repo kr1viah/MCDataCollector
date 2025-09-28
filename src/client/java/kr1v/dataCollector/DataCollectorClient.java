@@ -3,6 +3,7 @@ package kr1v.dataCollector;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import kr1v.dataCollector.games.EggWarsGame;
 import kr1v.dataCollector.games.LuckyIslandsGame;
 import kr1v.dataCollector.games.PoFGame;
 import kr1v.dataCollector.games.SkyWarsGame;
@@ -63,6 +64,7 @@ public class DataCollectorClient implements ClientModInitializer {
 		public List<PoFGame> listOfPoFGames = new ArrayList<>();
 		public List<SkyWarsGame> listOfSkyWarsGames = new ArrayList<>();
 		public List<LuckyIslandsGame> listOfLuckyIslandsGames = new ArrayList<>();
+		public List<EggWarsGame> listOfEggWarsGames = new ArrayList<>();
 
 		public synchronized void save(Path path) throws IOException {
 			Path dir = path.getParent();
