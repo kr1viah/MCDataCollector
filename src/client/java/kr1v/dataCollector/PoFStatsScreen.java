@@ -43,7 +43,7 @@ public class PoFStatsScreen extends Screen {
 			int[] placements = new int[9];
 
 			Map<String, Integer> map = new HashMap<>(); // item to count
-			var listOfGames = DataCollectorClient.data.ListOfPoFGames;
+			var listOfGames = DataCollectorClient.data.listOfPoFGames;
 
 			for (var game : listOfGames) {
 				if (game.place == null) continue;

@@ -35,7 +35,7 @@ public class ClientPlayNetworkHandlerMixin {
 
 		if (bl1 && bl2 && bl3 && bl4 && bl5) {
 			String item = packet.getStack().getItem().toString().replace("minecraft:", "");
-			DataCollectorClient.data.ListOfPoFGames.getLast().items.add(item);
+			DataCollectorClient.data.listOfPoFGames.getLast().items.add(item);
 		}
 		previousPacket = packet;
 	}

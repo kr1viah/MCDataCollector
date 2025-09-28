@@ -29,7 +29,7 @@ public class PoFIndividualGamesScreen extends Screen {
 
 	protected void init() {
 		this.gameListWidget = addDrawableChild(new GameListWidget(this.client, this.width / 2, this.height, 0, 50, 0, this.width / 2));
-		for (PoFGame poFGame : DataCollectorClient.data.ListOfPoFGames) {
+		for (PoFGame poFGame : DataCollectorClient.data.listOfPoFGames) {
 			gameListWidget.addGame(poFGame);
 		}
 		int quarter = width / 4;
@@ -91,7 +91,7 @@ public class PoFIndividualGamesScreen extends Screen {
 		if (client != null) {
 			StringDrawer sd = new StringDrawer(2, 2, 0xFFFFFFFF, context, true);
 			GameListWidget.GameEntry selectedGame = this.gameListWidget.getSelectedOrNull();
-			sd.drawString("Total games: " + DataCollectorClient.data.ListOfPoFGames.size());
+			sd.drawString("Total games: " + DataCollectorClient.data.listOfPoFGames.size());
 
 			this.stringListWidget.clearStrings();
 			if (selectedGame != null) {
@@ -139,7 +139,7 @@ public class PoFIndividualGamesScreen extends Screen {
 	}
 
 	private void applyFilters() {
-		List<PoFGame> filteredPoFGames = new ArrayList<>(DataCollectorClient.data.ListOfPoFGames);
+		List<PoFGame> filteredPoFGames = new ArrayList<>(DataCollectorClient.data.listOfPoFGames);
 
 		String itemFilter = itemFilterField.getText().toLowerCase();
 		if (!itemFilter.isEmpty()) {

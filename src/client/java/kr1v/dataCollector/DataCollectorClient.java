@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import kr1v.dataCollector.games.LuckyIslandsGame;
 import kr1v.dataCollector.games.PoFGame;
+import kr1v.dataCollector.games.SkyWarsGame;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
@@ -59,8 +60,9 @@ public class DataCollectorClient implements ClientModInitializer {
 	}
 
 	public static class Data {
-		public List<PoFGame> ListOfPoFGames = new ArrayList<>();
-		public List<LuckyIslandsGame> ListOfLuckyIslandsGames = new ArrayList<>();
+		public List<PoFGame> listOfPoFGames = new ArrayList<>();
+		public List<SkyWarsGame> listOfSkyWarsGames = new ArrayList<>();
+		public List<LuckyIslandsGame> listOfLuckyIslandsGames = new ArrayList<>();
 
 		public synchronized void save(Path path) throws IOException {
 			Path dir = path.getParent();

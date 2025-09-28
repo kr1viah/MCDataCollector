@@ -1,7 +1,6 @@
 package kr1v.dataCollector;
 
 import kr1v.dataCollector.games.CCGGame;
-import kr1v.dataCollector.games.PoFGame;
 import kr1v.dataCollector.util.StringDrawer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -38,8 +37,9 @@ public class CCGScreen extends Screen {
 			int[] placements = new int[32];
 
 			List<CCGGame> listOfGames = new ArrayList<>();
-			listOfGames.addAll(DataCollectorClient.data.ListOfPoFGames);
-			listOfGames.addAll(DataCollectorClient.data.ListOfLuckyIslandsGames);
+			listOfGames.addAll(DataCollectorClient.data.listOfPoFGames);
+			listOfGames.addAll(DataCollectorClient.data.listOfLuckyIslandsGames);
+			listOfGames.addAll(DataCollectorClient.data.listOfSkyWarsGames);
 			listOfGames.sort(Comparator.comparing(
 				g -> g.timeStampGameStart,
 				Comparator.nullsLast(Comparator.reverseOrder())
@@ -96,7 +96,7 @@ public class CCGScreen extends Screen {
 			int i = 0;
 			for (CCGGame game : listOfGames) {
 				String s =
-					"Game mode: " + (game.getClass() == PoFGame.class ? "Pillars of Fortune" : "Lucky Islands") +
+					"Game mode: " + (game.gameMode == null ? "?" : game.gameMode.name) +
 					"\n    Kills: " + game.kills +
 					"\n    Place: " + game.place +
 					"\n    Length: " + StringDrawer.formatDuration((double) game.lengthSeconds) +
